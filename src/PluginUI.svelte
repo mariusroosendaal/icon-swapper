@@ -1,6 +1,13 @@
 <script>
   import { onMount } from "svelte";
-  import { Badge, Button, Dropdown, Text, Label } from "figma-ui3-kit-svelte";
+  import {
+    Badge,
+    Button,
+    Dropdown,
+    Label,
+    Switch,
+    Text,
+  } from "figma-ui3-kit-svelte";
 
   let collections = [];
   let collectionOptions = [];
@@ -9,9 +16,9 @@
   let matches = [];
   let targetOptions = [];
   let targetMenuItems = [];
-  let status = "";
   let error = "";
   let isLoading = false;
+  let onlyInsideComponents = true;
 
   function sendMessage(type, data = {}) {
     parent.postMessage({ pluginMessage: { type, ...data } }, "*");
@@ -28,11 +35,11 @@
   function requestMatches() {
     if (!selectedSource || !selectedTarget) return;
     isLoading = true;
-    status = "Scanning current page...";
     error = "";
     sendMessage("get-matches", {
       sourceCollectionId: selectedSource.value,
       targetCollectionId: selectedTarget.value,
+      onlyInsideComponents,
     });
   }
 
@@ -49,11 +56,11 @@
   function swapIcons() {
     if (!selectedSource) return;
     const mapping = buildMapping();
-    status = "Swapping icons...";
     error = "";
     sendMessage("swap-icons", {
       sourceCollectionId: selectedSource.value,
       mapping,
+      onlyInsideComponents,
     });
   }
 
@@ -86,7 +93,6 @@
         ) || null,
     }));
     isLoading = false;
-    status = matches.length ? "" : "No used icons found on this page.";
   }
 
   function badgeVariant(confidence) {
@@ -95,14 +101,12 @@
     return "danger";
   }
 
-  function handleSwapComplete(payload) {
-    status = `Swapped ${payload.swappedCount} icons.`;
+  function handleSwapComplete() {
     error = "";
   }
 
   function handleError(payload) {
     error = payload.message || "Something went wrong.";
-    status = "";
     isLoading = false;
   }
 
@@ -141,9 +145,9 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section matches-section">
     <div class="section-header">
-      <Text variant="heading-small">Matches</Text>
+      <Text variant="body-medium-strong">Matches</Text>
       <Button
         variant="secondary"
         on:click={requestMatches}
@@ -157,10 +161,6 @@
       <div class="error">
         <Text variant="body-small">{error}</Text>
       </div>
-    {:else if status}
-      <div class="status">
-        <Text variant="body-small">{status}</Text>
-      </div>
     {/if}
 
     <div class="table">
@@ -172,7 +172,7 @@
         {#each matches as row, index}
           <div class="row">
             <div class="row-text">
-              <Text variant="body-small">{row.sourceName}</Text>
+              <Text variant="body-medium">{row.sourceName}</Text>
               <Badge
                 variant={badgeVariant(row.confidence)}
                 text={row.confidence}
@@ -191,6 +191,9 @@
   </div>
 
   <div class="footer">
+    <Switch bind:checked={onlyInsideComponents} on:change={requestMatches}>
+      Only swap in components
+    </Switch>
     <Button variant="primary" on:click={swapIcons} disabled={!matches.length}>
       Swap icons
     </Button>
@@ -212,7 +215,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--size-xxsmall);
-    padding: 0 var(--size-xxsmall);
+    /* padding: 0 var(--size-xxsmall); */
   }
 
   .collections-row {
@@ -237,9 +240,12 @@
     display: flex;
     flex-direction: column;
     gap: var(--size-xxsmall);
-    padding: var(--size-xxsmall) 0;
-    max-height: 220px;
+    padding: var(--size-xxsmall);
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    border: 1px solid var(--figma-color-border);
+    border-radius: var(--border-radius-medium);
   }
 
   .row {
@@ -262,14 +268,19 @@
 
   .footer {
     margin-top: auto;
-    padding: var(--size-xxsmall);
+    /* padding: var(--size-xxsmall); */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--size-xxsmall);
+  }
+
+  .matches-section {
+    flex: 1;
+    min-height: 0;
   }
 
   .muted {
-    color: var(--figma-color-text-secondary);
-  }
-
-  .status {
     color: var(--figma-color-text-secondary);
   }
 

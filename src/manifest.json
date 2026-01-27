@@ -1,6 +1,6 @@
 {
   "name": "Icon Swapper",
-  "id": "12345",
+  "id": "1597965780056553650",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "index.html",
@@ -9,5 +9,6 @@
   "editorType": ["figma"],
   "networkAccess": {
     "allowedDomains": ["none"]
-  }
+  },
+  "documentAccess": "dynamic-page"
 }
