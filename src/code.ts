@@ -1,5 +1,5 @@
 figma.showUI(__html__, {
-  width: 340,
+  width: 320,
   height: 420,
   themeColors: true,
 });
@@ -140,7 +140,7 @@ function getIconsPage() {
   return partialMatch || null;
 }
 
-function scanCollections(): CollectionScan {
+async function scanCollections(): Promise<CollectionScan> {
   const iconsPage = getIconsPage();
   const collections: IconCollection[] = [];
   const components: IconComponent[] = [];
@@ -151,6 +151,7 @@ function scanCollections(): CollectionScan {
     return { collections, components, componentById, componentByCollection };
   }
 
+  await iconsPage.loadAsync();
   const frames = iconsPage.children.filter(
     (node): node is FrameNode => node.type === "FRAME",
   );
@@ -184,10 +185,11 @@ function scanCollections(): CollectionScan {
   return { collections, components, componentById, componentByCollection };
 }
 
-function scanUsage(
+async function scanUsage(
   componentById: Map<string, IconComponent>,
   options: UsageScanOptions,
-): UsageScan {
+): Promise<UsageScan> {
+  await figma.currentPage.loadAsync();
   const instances = figma.currentPage.findAll(
     (node) => node.type === "INSTANCE",
   ) as InstanceNode[];
@@ -198,7 +200,7 @@ function scanUsage(
     if (options.onlyInsideComponents && !isInsideComponentScope(instance)) {
       continue;
     }
-    const mainComponent = instance.mainComponent;
+    const mainComponent = await instance.getMainComponentAsync();
     if (!mainComponent) continue;
     const component = componentById.get(mainComponent.id);
     if (!component) continue;
@@ -228,10 +230,9 @@ function buildMatches(
   sourceCollectionId: string,
   targetCollectionId: string,
   scan: CollectionScan,
-  onlyInsideComponents: boolean,
+  usage: UsageScan,
 ) {
-  const { componentById, componentByCollection } = scan;
-  const usage = scanUsage(componentById, { onlyInsideComponents });
+  const { componentByCollection } = scan;
   const sourceComponents = componentByCollection.get(sourceCollectionId) || [];
   const targetComponents = componentByCollection.get(targetCollectionId) || [];
   const sourceComponentsUsed = sourceComponents.filter((component) =>
@@ -269,25 +270,25 @@ function buildMatches(
   return { matches, targetOptions };
 }
 
-function swapIcons(
+async function swapIcons(
   sourceCollectionId: string,
   mapping: Record<string, string>,
   scan: CollectionScan,
   onlyInsideComponents: boolean,
 ) {
   const { componentById } = scan;
-  const usage = scanUsage(componentById, { onlyInsideComponents });
+  const usage = await scanUsage(componentById, { onlyInsideComponents });
   let swapped = 0;
 
   for (const instance of usage.instances) {
-    const mainComponent = instance.mainComponent;
+    const mainComponent = await instance.getMainComponentAsync();
     if (!mainComponent) continue;
     const component = componentById.get(mainComponent.id);
     if (!component || component.collectionId !== sourceCollectionId) continue;
 
     const targetId = mapping[component.id];
     if (!targetId) continue;
-    const targetNode = figma.getNodeById(targetId);
+    const targetNode = await figma.getNodeByIdAsync(targetId);
     if (targetNode && targetNode.type === "COMPONENT") {
       instance.swapComponent(targetNode);
       swapped += 1;
@@ -304,12 +305,14 @@ function postError(message: string) {
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "ui-ready") {
-    const scan = scanCollections();
+    const scan = await scanCollections();
     if (scan.collections.length === 0) {
       postError(`No icon collections found on page: ${ICONS_PAGE_NAME}`);
       return;
     }
-    const usage = scanUsage(scan.componentById, { onlyInsideComponents: true });
+    const usage = await scanUsage(scan.componentById, {
+      onlyInsideComponents: true,
+    });
     const defaultSourceId = pickDefaultSource(usage.usageByCollection);
     figma.ui.postMessage({
       type: "collections",
@@ -325,16 +328,19 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "get-matches") {
     const { sourceCollectionId, targetCollectionId, onlyInsideComponents } =
       msg;
-    const scan = scanCollections();
+    const scan = await scanCollections();
     if (!sourceCollectionId || !targetCollectionId) {
       postError("Choose both source and target collections.");
       return;
     }
+    const usage = await scanUsage(scan.componentById, {
+      onlyInsideComponents: Boolean(onlyInsideComponents),
+    });
     const { matches, targetOptions } = buildMatches(
       sourceCollectionId,
       targetCollectionId,
       scan,
-      Boolean(onlyInsideComponents),
+      usage,
     );
     figma.ui.postMessage({
       type: "matches",
@@ -345,12 +351,12 @@ figma.ui.onmessage = async (msg) => {
 
   if (msg.type === "swap-icons") {
     const { sourceCollectionId, mapping, onlyInsideComponents } = msg;
-    const scan = scanCollections();
+    const scan = await scanCollections();
     if (!sourceCollectionId || !mapping) {
       postError("Missing source collection or mapping.");
       return;
     }
-    const swappedCount = swapIcons(
+    const swappedCount = await swapIcons(
       sourceCollectionId,
       mapping,
       scan,
