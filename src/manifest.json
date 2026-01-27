@@ -1,6 +1,6 @@
 {
-  "name": "Svelte UI3 Kit Demo",
-  "id": "svelte-ui3-demo",
+  "name": "Icon Swapper",
+  "id": "12345",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "index.html",
