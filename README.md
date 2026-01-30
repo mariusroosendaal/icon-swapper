@@ -1,17 +1,26 @@
-# Figma Plugin Boilerplate - Svelte + UI3 Kit
+![Icon Swapper Cover](assets/cover.png)
 
-A modern Figma plugin boilerplate built with Svelte and the Figma UI3 Kit components.
+# Icon Swapper
+
+A Figma plugin that intelligently swaps icon components from one collection to another, with smart name matching and confidence scoring.
 
 ## Features
 
-- ✅ **Svelte Framework** - Modern, reactive UI framework
-- ✅ **UI3 Kit Components** - Official Figma UI components
-- ✅ **TypeScript Support** - Full type safety
-- ✅ **Hot Reload Development** - Fast development workflow
-- ✅ **Shape Creation** - Create rectangles and circles
-- ✅ **Text Creation** - Add custom text elements
-- ✅ **Tabbed Interface** - Clean, organized UI
-- ✅ **Menu Components** - Interactive dropdown menus
+- **Smart Icon Matching** - Automatically matches icons between collections using intelligent name comparison
+- **Synonym Support** - Recognizes common icon name synonyms (e.g., "view" ↔ "eye", "close" ↔ "x")
+- **Confidence Scoring** - Shows match confidence levels (high, medium, low) to help you review suggestions
+- **Collection Management** - Scans and manages multiple icon collections from your icons page
+- **Flexible Swapping** - Option to swap only icons inside components or across the entire page
+- **Usage Detection** - Analyzes which icons are actually being used in your design
+- **Clean UI** - Built with Svelte and Figma UI3 Kit for a native Figma experience
+
+## How It Works
+
+1. **Organize Your Icons** - Place your icon collections in frames on a page named `└ icons` (or any page with "icons" in the name)
+2. **Select Collections** - Choose a source collection (the icons you want to replace) and a target collection (the new icons)
+3. **Review Matches** - The plugin automatically matches icons based on their names and shows confidence levels
+4. **Adjust if Needed** - Manually adjust any matches that don't look right
+5. **Swap** - Click "Swap icons" to replace all instances across your design
 
 ## Getting Started
 
@@ -19,10 +28,11 @@ A modern Figma plugin boilerplate built with Svelte and the Figma UI3 Kit compon
 
 - Node.js 18+ 
 - npm or yarn
+- A Figma file with icon collections organized in frames
 
 ### Installation
 
-1. Clone or download this boilerplate
+1. Clone this repository
 2. Install dependencies:
    ```bash
    npm install
@@ -36,7 +46,7 @@ A modern Figma plugin boilerplate built with Svelte and the Figma UI3 Kit compon
 4. Import the plugin in Figma:
    - Open Figma
    - Go to `Plugins > Development > Import Plugin from Manifest`
-   - Select the `manifest.json` file from this directory
+   - Select the `manifest.json` file from the `dist` directory
 
 ### Development
 
@@ -48,73 +58,93 @@ npm run dev
 
 Then enable "Hot reload plugin" in Figma's Plugin Development menu.
 
-## Plugin Structure
+## Usage Guide
+
+### Setting Up Your Icons Page
+
+The plugin looks for a page named `└ icons` in your Figma file. Each **frame** on this page is treated as an icon collection:
+
+```
+└ icons (Page)
+  ├── Heroicons (Frame)
+  │   ├── check (Component)
+  │   ├── x (Component)
+  │   └── eye (Component)
+  ├── Lucide Icons (Frame)
+  │   ├── checkmark (Component)
+  │   ├── close (Component)
+  │   └── view (Component)
+```
+
+### Using the Plugin
+
+1. **Open the Plugin** - Run "Icon Swapper" from the Plugins menu
+2. **Select Source Collection** - Choose the icon set you're currently using
+3. **Select Target Collection** - Choose the icon set you want to switch to
+4. **Review Matches** - Check the automatically generated matches:
+   - 🟢 **High confidence** - Strong name match (80%+ similarity)
+   - 🟡 **Medium confidence** - Moderate match (50-79% similarity)
+   - 🔴 **Low confidence** - Weak match (<50% similarity)
+5. **Adjust Matches** - Use the dropdowns to manually select different target icons if needed
+6. **Toggle Scope** - Enable "Only swap in components" to limit changes to icon instances within components
+7. **Swap** - Click "Swap icons" to apply all changes
+
+### Name Matching
+
+The plugin uses intelligent name matching with several features:
+
+- **Token Matching** - Breaks icon names into parts (e.g., "arrow-left-circle" → ["arrow", "left", "circle"])
+- **Synonym Support** - Recognizes common variations:
+  - `view` ↔ `eye`
+  - `close` ↔ `x`
+  - `remove` ↔ `trash`
+  - `checkmark` ↔ `check`
+  - `overflow` ↔ `more`
+  - `warning` ↔ `alert`
+- **Size Agnostic** - Ignores size variants (12, 16, 20, 24, 28, 32, 48)
+- **Prefix Handling** - Strips collection name prefixes automatically
+
+## Project Structure
 
 ```
 ├── src/
-│   ├── code.ts          # Plugin logic (runs in Figma sandbox)
-│   ├── main.js          # Entry point for UI
+│   ├── code.ts          # Plugin logic: scanning, matching, swapping
+│   ├── main.js          # UI entry point
 │   ├── PluginUI.svelte  # Main UI component
-│   └── template.html    # HTML template
-├── public/              # Built files (generated)
-├── manifest.json        # Plugin configuration
+│   ├── index.html       # HTML template
+│   └── manifest.json    # Plugin configuration
+├── dist/                # Built files (generated)
+├── vite.config.ts       # Build configuration
 └── package.json         # Dependencies and scripts
 ```
 
-## Available UI Components
+## Development
 
-This boilerplate demonstrates several UI3 Kit components:
+### Available Scripts
 
-- **Button** - Primary and secondary buttons
-- **IconButton** - Icon-only buttons
-- **Tabs** - Tabbed navigation
-- **Menu** - Dropdown menus
-- **Input** - Text input fields
+- `npm run build` - Build the plugin for production
+- `npm run dev` - Build with watch mode for development
+- `npm run lint` - Check code with ESLint and Prettier
+- `npm run prettier` - Format code with Prettier
 
-## Customization
+### Adding New Synonyms
 
-### Adding New Features
+To add more icon name synonyms, edit the `SYNONYMS` object in `src/code.ts`:
 
-1. **UI Changes**: Edit `src/PluginUI.svelte`
-2. **Plugin Logic**: Modify `src/code.ts`
-3. **Styling**: Update the `<style>` section in the Svelte component
-
-### Adding New UI Components
-
-Import additional components from the UI3 Kit:
-
-```javascript
-import { NewComponent } from 'figma-ui3-kit-svelte';
-```
-
-### Communication Between UI and Plugin
-
-The UI communicates with the plugin code via messages:
-
-```javascript
-// In UI (PluginUI.svelte)
-function sendMessage(type, data = {}) {
-    parent.postMessage({ pluginMessage: { type, ...data } }, '*');
-}
-
-// In plugin code (code.ts)
-figma.ui.onmessage = async (msg) => {
-    if (msg.type === 'your-action') {
-        // Handle the action
-    }
+```typescript
+const SYNONYMS: Record<string, string> = {
+  view: "eye",
+  eye: "view",
+  // Add your own synonyms here
 };
 ```
 
-### Font Loading for Text Elements
+### Customizing the Icons Page Name
 
-When creating text elements in Figma, you must load the font first:
+By default, the plugin looks for a page named `└ icons`. To change this, modify the constant in `src/code.ts`:
 
-```javascript
-// Load font before creating text
-await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-
-const text = figma.createText();
-text.characters = "Your text here";
+```typescript
+const ICONS_PAGE_NAME = "└ icons";
 ```
 
 ## Building for Production
@@ -123,8 +153,16 @@ text.characters = "Your text here";
 npm run build
 ```
 
-This creates optimized files in the `public/` directory ready for distribution.
+This creates optimized files in the `dist/` directory ready for distribution or import into Figma.
+
+## Tech Stack
+
+- **Svelte** - Reactive UI framework
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool
+- **Figma UI3 Kit** - Official Figma design system components
+- **Vitest** - Unit testing
 
 ## License
 
-MIT License - feel free to use this boilerplate for your own Figma plugins!
+MIT License
