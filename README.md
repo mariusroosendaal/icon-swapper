@@ -2,7 +2,7 @@
 
 # Icon Swapper
 
-A Figma plugin that intelligently swaps icon components from one collection to another, with smart name matching and confidence scoring.
+A Figma plugin that swaps icon components from one collection to another, with smart name matching and confidence scoring.
 
 ## Features
 
@@ -160,7 +160,7 @@ This creates optimized files in the `dist/` directory ready for distribution or 
 - **Svelte** - Reactive UI framework
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool
-- **Figma UI3 Kit** - Official Figma design system components
+- **Figma UI3 Kit** - Figma UI3 design system components
 - **Vitest** - Unit testing
 
 ## License
