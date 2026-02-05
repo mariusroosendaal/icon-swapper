@@ -1,11 +1,19 @@
 /**
-* FIGMA-UI3-KIT-SVELTE STYLES — FOR DEVELOPMENT/REFERENCE PURPOSES ONLY.
-* Use this file in non-figma plugin environments, e.g. Storybook to ensure base styles and color tokens are accessible to components.
-* This file doesn't need to be imported into Plugin UI.
-* https://www.figma.com/plugin-docs/css-variables/
-*/
+ * FIGMA UI3 KIT - CSS VARIABLES REFERENCE
+ * 
+ * This file is copied from figma-ui3-kit-svelte for reference purposes.
+ * These styles are automatically imported by the UI3 Kit components.
+ * 
+ * You do NOT need to import this file - it's here so you can see what
+ * CSS variables are available (e.g., --figma-color-text, --size-xxsmall).
+ * 
+ * Use these variables in your custom styles. They're provided by the UI3 Kit
+ * and will work automatically when you use the kit's components.
+ */
+
 :root {
   /* COLORS */
+
   /* Basic foreground */
   --white: #ffffff;
   --black: #000000;
@@ -182,40 +190,6 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-text-rendering: optimizeLegibility;
   -moz-text-rendering: optimizeLegibility;
-}
-
-/*  FONTS */
-@font-face {
-  font-family: "Inter";
-  font-weight: 400;
-  font-style: normal;
-  src:
-    url("https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.7")
-      format("woff2"),
-    url("https://rsms.me/inter/font-files/Inter-Regular.woff?v=3.7")
-      format("woff");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-weight: 500;
-  font-style: normal;
-  src:
-    url("https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7")
-      format("woff2"),
-    url("https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7")
-      format("woff");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-weight: 600;
-  font-style: normal;
-  src:
-    url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7")
-      format("woff2"),
-    url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7")
-      format("woff");
 }
 
 /* Hyperlink styling */
