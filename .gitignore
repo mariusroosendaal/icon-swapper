@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Turbo cache
+.turbo/
+
 # Environment variables
 .env
 .env.*
@@ -31,3 +34,4 @@ coverage/
 
 # Temporary files
 *.tmp
+.DS_Store
