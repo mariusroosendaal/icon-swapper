@@ -1,10 +1,19 @@
 {
   "name": "icon-swapper",
-  "type": "module",
-  "description": "Figma plugin that intelligently swaps icon components from one collection to another with smart name matching",
   "version": "1.0.0",
+  "description": "Figma plugin: swap icon components between collections with token-based name matching and synonym support",
+  "type": "module",
   "author": "Marius Roosendaal",
   "license": "MIT",
+  "keywords": [
+    "figma",
+    "figma-plugin",
+    "icons",
+    "components",
+    "design-systems",
+    "svelte",
+    "typescript"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
