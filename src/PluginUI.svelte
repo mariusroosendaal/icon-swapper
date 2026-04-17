@@ -8,7 +8,7 @@
     EmptyState,
     sendToPlugin,
     createMessageHandler,
-  } from "figma-plugin-utils";
+  } from "figma-plugin-utilities";
 
   let collections = [];
   let collectionOptions = [];
