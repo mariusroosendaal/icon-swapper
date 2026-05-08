@@ -1,6 +1,13 @@
 <script>
   import { onMount } from "svelte";
-  import { Badge, Button, Dropdown, Switch, Text, Tooltip } from "figma-ui3-kit-svelte";
+  import {
+    Badge,
+    Button,
+    Dropdown,
+    Switch,
+    Text,
+    Tooltip,
+  } from "figma-ui3-kit-svelte";
   import {
     PluginLayout,
     FieldGroup,
@@ -189,8 +196,16 @@
       </Switch>
     </svelte:fragment>
     <svelte:fragment slot="right">
-      <Tooltip label="Load matches to enable swapping" direction="TopRight" disabled={!!matches.length}>
-        <Button variant="primary" on:click={swapIcons} disabled={!matches.length}>
+      <Tooltip
+        label="Load matches to enable swapping"
+        direction="TopRight"
+        disabled={!!matches.length}
+      >
+        <Button
+          variant="primary"
+          on:click={swapIcons}
+          disabled={!matches.length}
+        >
           Swap icons
         </Button>
       </Tooltip>
