@@ -52,11 +52,20 @@ type UsageScan = {
   instances: InstanceNode[];
   usageByCollection: Map<string, number>;
   usedComponentIds: Set<string>;
+  instanceComponentId: Map<string, string>;
 };
 
 type UsageScanOptions = {
   onlyInsideComponents: boolean;
 };
+
+// CQ1/P2: cache the collection scan — the icons page doesn't change during a session
+let cachedScan: CollectionScan | null = null;
+
+async function getScan(): Promise<CollectionScan> {
+  if (!cachedScan) cachedScan = await scanCollections();
+  return cachedScan;
+}
 
 function isInsideComponentScope(node: SceneNode) {
   let current: BaseNode | null = node.parent;
@@ -90,13 +99,11 @@ function normalizeName(name: string, collectionName?: string) {
     .replace(/\s+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+  // CQ2: the digit filter already covers all size strings (12, 16, 20, …)
   const tokens = normalized
     .split("-")
     .filter((token) => token.length > 0)
-    .filter((token) => !/^\d+$/.test(token))
-    .filter(
-      (token) => !["12", "16", "20", "24", "28", "32", "48"].includes(token),
-    );
+    .filter((token) => !/^\d+$/.test(token));
 
   return tokens.join("-");
 }
@@ -195,6 +202,8 @@ async function scanUsage(
   ) as InstanceNode[];
   const usageByCollection = new Map<string, number>();
   const usedComponentIds = new Set<string>();
+  // P1: cache mainComponent resolution so swapIcons doesn't call it a second time
+  const instanceComponentId = new Map<string, string>();
 
   for (const instance of instances) {
     if (options.onlyInsideComponents && !isInsideComponentScope(instance)) {
@@ -204,6 +213,7 @@ async function scanUsage(
     if (!mainComponent) continue;
     const component = componentById.get(mainComponent.id);
     if (!component) continue;
+    instanceComponentId.set(instance.id, component.id);
     usedComponentIds.add(component.id);
     usageByCollection.set(
       component.collectionId,
@@ -211,7 +221,7 @@ async function scanUsage(
     );
   }
 
-  return { instances, usageByCollection, usedComponentIds };
+  return { instances, usageByCollection, usedComponentIds, instanceComponentId };
 }
 
 function pickDefaultSource(usageByCollection: Map<string, number>) {
@@ -270,24 +280,25 @@ function buildMatches(
   return { matches, targetOptions };
 }
 
+// P1: accepts pre-computed UsageScan to avoid re-calling getMainComponentAsync
 async function swapIcons(
   sourceCollectionId: string,
   mapping: Record<string, string>,
   scan: CollectionScan,
-  onlyInsideComponents: boolean,
+  usage: UsageScan,
 ) {
   const { componentById } = scan;
-  const usage = await scanUsage(componentById, { onlyInsideComponents });
   let swapped = 0;
 
   for (const instance of usage.instances) {
-    const mainComponent = await instance.getMainComponentAsync();
-    if (!mainComponent) continue;
-    const component = componentById.get(mainComponent.id);
+    const componentId = usage.instanceComponentId.get(instance.id);
+    if (!componentId) continue;
+    const component = componentById.get(componentId);
     if (!component || component.collectionId !== sourceCollectionId) continue;
 
-    const targetId = mapping[component.id];
-    if (!targetId) continue;
+    const targetId = mapping[componentId];
+    // S2: validate targetId is a non-empty string before the async call
+    if (!targetId || typeof targetId !== "string") continue;
     const targetNode = await figma.getNodeByIdAsync(targetId);
     if (targetNode && targetNode.type === "COMPONENT") {
       instance.swapComponent(targetNode);
@@ -305,7 +316,7 @@ function postError(message: string) {
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "ui-ready") {
-    const scan = await scanCollections();
+    const scan = await getScan();
     if (scan.collections.length === 0) {
       postError(`No icon collections found on page: ${ICONS_PAGE_NAME}`);
       return;
@@ -328,11 +339,11 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "get-matches") {
     const { sourceCollectionId, targetCollectionId, onlyInsideComponents } =
       msg;
-    const scan = await scanCollections();
     if (!sourceCollectionId || !targetCollectionId) {
       postError("Choose both source and target collections.");
       return;
     }
+    const scan = await getScan();
     const usage = await scanUsage(scan.componentById, {
       onlyInsideComponents: Boolean(onlyInsideComponents),
     });
@@ -351,18 +362,37 @@ figma.ui.onmessage = async (msg) => {
 
   if (msg.type === "swap-icons") {
     const { sourceCollectionId, mapping, onlyInsideComponents } = msg;
-    const scan = await scanCollections();
-    if (!sourceCollectionId || !mapping) {
+    // S1: validate shape of incoming payload before acting on it
+    if (
+      !sourceCollectionId ||
+      typeof mapping !== "object" ||
+      mapping === null ||
+      Array.isArray(mapping)
+    ) {
       postError("Missing source collection or mapping.");
       return;
     }
+    const scan = await getScan();
+    const usage = await scanUsage(scan.componentById, {
+      onlyInsideComponents: Boolean(onlyInsideComponents),
+    });
     const swappedCount = await swapIcons(
       sourceCollectionId,
       mapping,
       scan,
-      Boolean(onlyInsideComponents),
+      usage,
     );
-    figma.notify(`Swapped ${swappedCount} icons.`);
+    // UX3/UX5: distinguish zero-swap from success and include undo hint
+    if (swappedCount === 0) {
+      figma.notify(
+        "No icons swapped — check that source icons appear on this page.",
+        { error: true },
+      );
+    } else {
+      figma.notify(
+        `Swapped ${swappedCount} icon${swappedCount === 1 ? "" : "s"}. Press Cmd+Z to undo.`,
+      );
+    }
     figma.ui.postMessage({ type: "swap-complete", swappedCount });
   }
 };
