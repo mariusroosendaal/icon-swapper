@@ -1,6 +1,15 @@
 # Changelog
 
-## [1.0.0] - 2026-04-17
+## [Unreleased]
+
+### Changed
+
+- Disabled Swap icons button now shows a tooltip when no matches are loaded
+- Match list announces updates when matches are refreshed
+- Error message correctly marked as an alert for assistive technology
+- Source, target, and per-row match dropdowns have accessible names
+
+## [0.5.0] - 2026-04-17
 
 ### Added
 
