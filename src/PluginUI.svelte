@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { Badge, Button, Dropdown, Switch, Text } from "figma-ui3-kit-svelte";
+  import { Badge, Button, Dropdown, Switch, Text, Tooltip } from "figma-ui3-kit-svelte";
   import {
     PluginLayout,
     FieldGroup,
@@ -123,6 +123,7 @@
           menuItems={collectionOptions}
           bind:value={selectedSource}
           on:change={requestMatches}
+          ariaLabel="Source collection"
         />
       </FieldGroup>
       <FieldGroup label="Target collection">
@@ -131,6 +132,7 @@
           menuItems={collectionOptions}
           bind:value={selectedTarget}
           on:change={requestMatches}
+          ariaLabel="Target collection"
         />
       </FieldGroup>
     </div>
@@ -148,12 +150,12 @@
       </div>
 
       {#if error}
-        <div class="error">
+        <div class="error" role="alert">
           <Text variant="body-small">{error}</Text>
         </div>
       {/if}
 
-      <div class="table">
+      <div class="table" aria-live="polite" aria-atomic="false">
         {#if matches.length === 0}
           <EmptyState message="No matches to show." size="small" />
         {:else}
@@ -171,6 +173,7 @@
                 menuItems={targetMenuItems}
                 bind:value={row.targetOption}
                 on:change={() => (matches = [...matches])}
+                ariaLabel="{row.sourceName} — target icon"
               />
             </div>
           {/each}
@@ -186,9 +189,11 @@
       </Switch>
     </svelte:fragment>
     <svelte:fragment slot="right">
-      <Button variant="primary" on:click={swapIcons} disabled={!matches.length}>
-        Swap icons
-      </Button>
+      <Tooltip label="Load matches to enable swapping" direction="TopRight" disabled={!!matches.length}>
+        <Button variant="primary" on:click={swapIcons} disabled={!matches.length}>
+          Swap icons
+        </Button>
+      </Tooltip>
     </svelte:fragment>
   </Footer>
 </div>
