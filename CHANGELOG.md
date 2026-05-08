@@ -11,7 +11,6 @@
 
 - Per-row target dropdowns now each own their menu item objects — the Dropdown component's `item.selected` mutation no longer bleeds across rows, so the correct item is highlighted when any dropdown opens
 - Keyed `{#each}` loop for match rows prevents Svelte from reusing Dropdown DOM nodes between rows
-- Swapping when source and target collections are the same is now blocked with an error message
 - Swap button is disabled and shows "Working…" during an in-progress swap; resets correctly on completion
 - "Swap icons" now shows an error if no target mappings are selected rather than silently sending an empty mapping
 - Zero-swap result reports an error notification explaining no icons were found on the page
