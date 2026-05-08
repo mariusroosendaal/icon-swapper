@@ -52,20 +52,12 @@ type UsageScan = {
   instances: InstanceNode[];
   usageByCollection: Map<string, number>;
   usedComponentIds: Set<string>;
-  instanceComponentId: Map<string, string>;
 };
 
 type UsageScanOptions = {
   onlyInsideComponents: boolean;
 };
 
-// CQ1/P2: cache the collection scan — the icons page doesn't change during a session
-let cachedScan: CollectionScan | null = null;
-
-async function getScan(): Promise<CollectionScan> {
-  if (!cachedScan) cachedScan = await scanCollections();
-  return cachedScan;
-}
 
 function isInsideComponentScope(node: SceneNode) {
   let current: BaseNode | null = node.parent;
@@ -202,8 +194,6 @@ async function scanUsage(
   ) as InstanceNode[];
   const usageByCollection = new Map<string, number>();
   const usedComponentIds = new Set<string>();
-  // P1: cache mainComponent resolution so swapIcons doesn't call it a second time
-  const instanceComponentId = new Map<string, string>();
 
   for (const instance of instances) {
     if (options.onlyInsideComponents && !isInsideComponentScope(instance)) {
@@ -213,7 +203,6 @@ async function scanUsage(
     if (!mainComponent) continue;
     const component = componentById.get(mainComponent.id);
     if (!component) continue;
-    instanceComponentId.set(instance.id, component.id);
     usedComponentIds.add(component.id);
     usageByCollection.set(
       component.collectionId,
@@ -221,7 +210,7 @@ async function scanUsage(
     );
   }
 
-  return { instances, usageByCollection, usedComponentIds, instanceComponentId };
+  return { instances, usageByCollection, usedComponentIds };
 }
 
 function pickDefaultSource(usageByCollection: Map<string, number>) {
@@ -280,23 +269,23 @@ function buildMatches(
   return { matches, targetOptions };
 }
 
-// P1: accepts pre-computed UsageScan to avoid re-calling getMainComponentAsync
 async function swapIcons(
   sourceCollectionId: string,
   mapping: Record<string, string>,
   scan: CollectionScan,
-  usage: UsageScan,
+  onlyInsideComponents: boolean,
 ) {
   const { componentById } = scan;
+  const usage = await scanUsage(componentById, { onlyInsideComponents });
   let swapped = 0;
 
   for (const instance of usage.instances) {
-    const componentId = usage.instanceComponentId.get(instance.id);
-    if (!componentId) continue;
-    const component = componentById.get(componentId);
+    const mainComponent = await instance.getMainComponentAsync();
+    if (!mainComponent) continue;
+    const component = componentById.get(mainComponent.id);
     if (!component || component.collectionId !== sourceCollectionId) continue;
 
-    const targetId = mapping[componentId];
+    const targetId = mapping[component.id];
     // S2: validate targetId is a non-empty string before the async call
     if (!targetId || typeof targetId !== "string") continue;
     const targetNode = await figma.getNodeByIdAsync(targetId);
@@ -316,7 +305,7 @@ function postError(message: string) {
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === "ui-ready") {
-    const scan = await getScan();
+    const scan = await scanCollections();
     if (scan.collections.length === 0) {
       postError(`No icon collections found on page: ${ICONS_PAGE_NAME}`);
       return;
@@ -343,7 +332,7 @@ figma.ui.onmessage = async (msg) => {
       postError("Choose both source and target collections.");
       return;
     }
-    const scan = await getScan();
+    const scan = await scanCollections();
     const usage = await scanUsage(scan.componentById, {
       onlyInsideComponents: Boolean(onlyInsideComponents),
     });
@@ -372,15 +361,12 @@ figma.ui.onmessage = async (msg) => {
       postError("Missing source collection or mapping.");
       return;
     }
-    const scan = await getScan();
-    const usage = await scanUsage(scan.componentById, {
-      onlyInsideComponents: Boolean(onlyInsideComponents),
-    });
+    const scan = await scanCollections();
     const swappedCount = await swapIcons(
       sourceCollectionId,
       mapping,
       scan,
-      usage,
+      Boolean(onlyInsideComponents),
     );
     // UX3/UX5: distinguish zero-swap from success and include undo hint
     if (swappedCount === 0) {
