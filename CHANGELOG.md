@@ -2,20 +2,26 @@
 
 ## [0.5.2] - 2026-05-08
 
+### Added
+
+- "None" option in every target dropdown to explicitly exclude an icon from the swap
+- Match count shown in section header once matches are loaded
+
 ### Fixed
 
-- Cache icon collection scan across plugin messages — eliminates redundant page traversals (CQ1/P2)
-- Avoid double `getMainComponentAsync()` calls during swap by reusing scan results (P1)
-- Remove dead size-string filter in `normalizeName` — pure-digit tokens already removed earlier (CQ2)
-- Validate `mapping` payload shape before swap to prevent malformed messages acting on the document (S1)
-- Validate target node IDs are non-empty strings before calling `getNodeByIdAsync` (S2)
-- Prevent swapping when source and target collections are the same (UX1)
-- Set loading state during swap — button disabled and "Working…" label while in progress (CQ3/UX2)
-- Guard against empty mapping before dispatching swap with actionable error message (CQ4)
-- Add JSDoc types to all Svelte state variables and function parameters (CQ5)
-- Distinguish zero-swap result from success with a specific error notification (UX3)
-- Include "Press Cmd+Z to undo" in the success notification after a bulk swap (UX5)
-- Add `aria-live="polite"` status region so screen readers announce swap start and completion
+- Per-row target dropdowns now each own their menu item objects — the Dropdown component's `item.selected` mutation no longer bleeds across rows, so the correct item is highlighted when any dropdown opens
+- Keyed `{#each}` loop for match rows prevents Svelte from reusing Dropdown DOM nodes between rows
+- Swapping when source and target collections are the same is now blocked with an error message
+- Swap button is disabled and shows "Working…" during an in-progress swap; resets correctly on completion
+- "Swap icons" now shows an error if no target mappings are selected rather than silently sending an empty mapping
+- Zero-swap result reports an error notification explaining no icons were found on the page
+- Success notification now includes "Press Cmd+Z to undo" after a bulk swap
+- `mapping` payload validated as a non-null object before acting on the document
+- Target node IDs validated as non-empty strings before calling `getNodeByIdAsync`
+- Dead size-string filter removed from `normalizeName` — pure-digit tokens are already stripped by the preceding filter
+- Collection dropdowns are now fixed-width with ellipsis overflow, matching the per-row icon selectors
+- `aria-live="polite"` status region added so screen readers announce swap progress and completion
+- JSDoc types added to all Svelte state variables and function parameters
 
 ## [0.5.1] - 2026-05-08
 

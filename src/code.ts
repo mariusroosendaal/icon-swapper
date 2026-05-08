@@ -286,7 +286,7 @@ async function swapIcons(
     if (!component || component.collectionId !== sourceCollectionId) continue;
 
     const targetId = mapping[component.id];
-    // S2: validate targetId is a non-empty string before the async call
+    // Validate targetId is a non-empty string before the async call
     if (!targetId || typeof targetId !== "string") continue;
     const targetNode = await figma.getNodeByIdAsync(targetId);
     if (targetNode && targetNode.type === "COMPONENT") {
@@ -368,7 +368,7 @@ figma.ui.onmessage = async (msg) => {
       scan,
       Boolean(onlyInsideComponents),
     );
-    // UX3/UX5: distinguish zero-swap from success and include undo hint
+
     if (swappedCount === 0) {
       figma.notify(
         "No icons swapped — check that source icons appear on this page.",
@@ -376,7 +376,7 @@ figma.ui.onmessage = async (msg) => {
       );
     } else {
       figma.notify(
-        `Swapped ${swappedCount} icon${swappedCount === 1 ? "" : "s"}. Press Cmd+Z to undo.`,
+        `Swapped ${swappedCount} icon${swappedCount === 1 ? "" : "s"}. Press Ctrl/Cmd+Z to undo.`,
       );
     }
     figma.ui.postMessage({ type: "swap-complete", swappedCount });

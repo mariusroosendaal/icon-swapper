@@ -1,6 +1,6 @@
 {
   "name": "icon-swapper",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Swap icon components between collections with token-based name matching and synonym support",
   "type": "module",
   "author": "Marius Roosendaal",

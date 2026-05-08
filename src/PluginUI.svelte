@@ -28,6 +28,7 @@
    *   score: number;
    *   confidence: "high" | "medium" | "low";
    *   targetOption: TargetMenuOption | null;
+   *   menuItems: TargetMenuOption[];
    * }} MatchRow
    */
 
@@ -80,7 +81,7 @@
     /** @type {Record<string, string>} */
     const mapping = {};
     for (const row of matches) {
-      if (row.targetOption?.value) {
+      if (row.targetOption?.value && row.targetOption.value !== "__none__") {
         mapping[row.sourceComponentId] = row.targetOption.value;
       }
     }
@@ -133,13 +134,18 @@
       label: option.name,
       value: option.id,
     }));
-    matches = (payload.matches || []).map((row) => ({
-      ...row,
-      targetOption:
-        targetMenuItems.find(
-          (option) => option.value === row.suggestedTargetId,
-        ) || null,
-    }));
+    matches = (payload.matches || []).map((row) => {
+      // Each row gets its own copy of the menu items so the Dropdown component's
+      // item.selected mutation doesn't bleed across rows via the shared array.
+      const rowMenuItems = [
+        { label: "None", value: "__none__" },
+        ...targetMenuItems.map((item) => ({ ...item })),
+      ];
+      const matched =
+        rowMenuItems.find((item) => item.value === row.suggestedTargetId) ||
+        null;
+      return { ...row, menuItems: rowMenuItems, targetOption: matched };
+    });
     isLoading = false;
   }
 
@@ -211,17 +217,17 @@
         </Button>
       </div>
 
-      {#if error}
+      <!-- {#if error}
         <div class="error" role="alert">
           <Text variant="body-small">{error}</Text>
         </div>
-      {/if}
+      {/if} -->
 
       <div class="table" aria-live="polite" aria-atomic="false">
         {#if matches.length === 0}
           <EmptyState message="No matches to show." size="small" />
         {:else}
-          {#each matches as row}
+          {#each matches as row (row.sourceComponentId)}
             <div class="row">
               <div class="row-text">
                 <Text variant="body-medium">{row.sourceName}</Text>
@@ -232,7 +238,7 @@
               </div>
               <Dropdown
                 placeholder="Select target icon"
-                menuItems={targetMenuItems}
+                menuItems={row.menuItems}
                 bind:value={row.targetOption}
                 on:change={() => (matches = [...matches])}
                 ariaLabel="{row.sourceName} — target icon"
@@ -285,12 +291,9 @@
   }
 
   .collections-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--size-xxsmall);
-  }
-
-  .collections-row :global(.field-group) {
-    flex: 1;
   }
 
   .matches-section {
