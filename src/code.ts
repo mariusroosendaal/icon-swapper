@@ -58,7 +58,6 @@ type UsageScanOptions = {
   onlyInsideComponents: boolean;
 };
 
-
 function isInsideComponentScope(node: SceneNode) {
   let current: BaseNode | null = node.parent;
   while (current) {
