@@ -265,7 +265,7 @@
         <Button
           variant="primary"
           on:click={swapIcons}
-          disabled={!matches.length || isLoading}
+          ariaDisabled={!matches.length || isLoading}
         >
           {isLoading ? "Working…" : "Swap icons"}
         </Button>
