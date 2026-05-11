@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.2] - 2026-05-08
+## [0.5.1] - 2026-05-08
 
 ### Added
 
@@ -21,8 +21,6 @@
 - Collection dropdowns are now fixed-width with ellipsis overflow, matching the per-row icon selectors
 - `aria-live="polite"` status region added so screen readers announce swap progress and completion
 - JSDoc types added to all Svelte state variables and function parameters
-
-## [0.5.1] - 2026-05-08
 
 ### Changed
 
