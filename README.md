@@ -1,4 +1,4 @@
-![Icon Swapper Cover](assets/cover.png)
+![Icon Swapper Cover](assets/thumbnail.png)
 
 # Icon Swapper
 
