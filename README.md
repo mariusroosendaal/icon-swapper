@@ -10,7 +10,7 @@ Replaces icon instances across your design by matching icons between collections
 
 ## Usage
 
-1. Organize icon collections in frames on a page named `└ icons`
+1. Organize icon collections in frames on a page containing the word `icons`
 2. Run the plugin
 3. Select source collection (icons to replace) and target collection (new icons)
 4. Review auto-matched icons and adjust as needed
