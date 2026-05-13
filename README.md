@@ -4,6 +4,10 @@
 
 A Figma plugin for swapping icon components from one collection to another with smart name matching.
 
+## Install
+
+Get it from the [Figma Community](https://www.figma.com/community/plugin/1597965780056553650/icon-swapper)
+
 ## What it does
 
 Replaces icon instances across your design by matching icons between collections using intelligent name comparison, synonym support, and confidence scoring.
