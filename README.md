@@ -2,7 +2,7 @@
 
 # Icon Swapper
 
-Swap icon components from one collection to another with smart name matching.
+A Figma plugin for swapping icon components from one collection to another with smart name matching.
 
 ## What it does
 
