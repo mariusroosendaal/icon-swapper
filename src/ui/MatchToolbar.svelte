@@ -32,6 +32,8 @@
   // Closing clears what was typed: a collapsed field still filtering would
   // leave a short list with nothing on screen saying why.
   export let searching = false;
+  // Set while a swap runs: a new scope would change the list under it.
+  export let disabled = false;
 
   const closeSearch = () => {
     search = "";
@@ -92,6 +94,7 @@
       class="scope-select"
       menuItems={scopes}
       bind:value={scopeChoice}
+      {disabled}
       on:change
       ariaLabel="Where to swap icons"
     />

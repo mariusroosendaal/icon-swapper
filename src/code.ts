@@ -161,14 +161,22 @@ function expandTokens(tokens: string[]) {
   return [...expanded];
 }
 
-function scoreNames(sourceName: string, targetName: string) {
-  if (!sourceName || !targetName) return 0;
-  if (sourceName === targetName) return 1;
-  const sourceTokens = expandTokens(sourceName.split("-").filter(Boolean));
-  const targetTokens = expandTokens(targetName.split("-").filter(Boolean));
-  const targetSet = new Set(targetTokens);
-  const intersection = sourceTokens.filter((token) => targetSet.has(token));
-  const denom = Math.max(sourceTokens.length, targetTokens.length, 1);
+type NameKey = { normalized: string; tokens: string[]; tokenSet: Set<string> };
+
+// A name made ready to score, once per icon rather than once per pair: a
+// source set scored against a large target set would otherwise normalize each
+// target name again for every source icon.
+function nameKey(name: string): NameKey {
+  const normalized = normalizeName(name);
+  const tokens = expandTokens(normalized.split("-").filter(Boolean));
+  return { normalized, tokens, tokenSet: new Set(tokens) };
+}
+
+function scoreNames(source: NameKey, target: NameKey) {
+  if (!source.normalized || !target.normalized) return 0;
+  if (source.normalized === target.normalized) return 1;
+  const intersection = source.tokens.filter((t) => target.tokenSet.has(t));
+  const denom = Math.max(source.tokens.length, target.tokens.length, 1);
   return intersection.length / denom;
 }
 
@@ -363,13 +371,18 @@ function buildMatches(
     name: component.name,
   }));
 
+  const targetKeys = targetComponents.map((target) => ({
+    id: target.id,
+    key: nameKey(target.name),
+  }));
+
   const matches: MatchRow[] = sourceComponentsUsed.map((source) => {
-    const sourceNormalized = normalizeName(source.name);
+    const sourceKey = nameKey(source.name);
     // Ties keep collection order, so the first best match stays the suggestion.
-    const candidates = targetComponents
+    const candidates = targetKeys
       .map((target) => ({
         id: target.id,
-        score: scoreNames(sourceNormalized, normalizeName(target.name)),
+        score: scoreNames(sourceKey, target.key),
       }))
       .filter((candidate) => candidate.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -684,7 +697,25 @@ async function reveal(
 // older one stops early rather than finish work nobody will see.
 let latestMatchRequest = 0;
 
+// Anything thrown while reading or writing the document reaches the UI as an
+// error, so it never waits on a reply that is not coming.
 figma.ui.onmessage = async (msg) => {
+  try {
+    await handleMessage(msg);
+  } catch {
+    if (msg?.type === "swap-icons") {
+      postError(
+        "Couldn't finish the swap. Some icons may already be swapped — press Ctrl/Cmd+Z to undo, then try again.",
+      );
+    } else {
+      postError(
+        "Couldn't read the icons. Close and reopen the plugin to try again.",
+      );
+    }
+  }
+};
+
+async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
   if (msg.type === "ui-ready") {
     const scan = await scanCollections();
     if (scan.collections.length === 0) {
@@ -800,4 +831,4 @@ figma.ui.onmessage = async (msg) => {
       swappedCount: result.swapped,
     });
   }
-};
+}

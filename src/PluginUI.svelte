@@ -83,7 +83,9 @@
 
   let error = "";
   let statusMessage = "";
-  let isLoading = false;
+  // Loading from the start: until the collections arrive, an empty list would
+  // read as "nothing found".
+  let isLoading = true;
   let isSwapping = false;
   let progressMessage = "";
   let onlyInsideComponents = true;
@@ -193,11 +195,14 @@
   }
 
   function requestMatches() {
-    if (!selectedSource || !selectedTarget) return;
+    // A swap in progress owns the list: a reply landing mid-swap would clear
+    // `isLoading` and let a second swap start alongside the first.
+    if (isSwapping || !selectedSource || !selectedTarget) return;
     // UX1: block same-collection selection early with clear feedback
     if (selectedSource.value === selectedTarget.value) {
       error = "Choose a target collection other than the source.";
       rows = [];
+      isLoading = false;
       return;
     }
     // Read from the choice, not `scope`: handlers run before `$:` catches up.
@@ -222,7 +227,8 @@
   }
 
   function swapIcons() {
-    if (!selectedSource || isLoading || !toSwap.length) return;
+    if (!selectedSource || isLoading || isSwapping || !toSwap.length) return;
+    clearTimeout(refreshTimer);
     /** @type {Record<string, string>} */
     const mapping = {};
     for (const row of toSwap) {
@@ -416,6 +422,7 @@
         bind:searching
         {counts}
         scopes={SCOPES}
+        disabled={isSwapping}
         on:change={requestMatches}
       />
     </svelte:fragment>
@@ -486,7 +493,11 @@
     </svelte:fragment>
 
     <svelte:fragment slot="lead">
-      <Switch bind:checked={onlyInsideComponents} on:change={requestMatches}>
+      <Switch
+        bind:checked={onlyInsideComponents}
+        disabled={isSwapping}
+        on:change={requestMatches}
+      >
         Only in components
       </Switch>
     </svelte:fragment>
