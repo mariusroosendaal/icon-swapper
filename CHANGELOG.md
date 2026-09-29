@@ -9,7 +9,7 @@
 - Each match shows how many times the icon is used, and on how many pages
 - Matches refresh when the selection changes (selection scope) or the current page changes (page scope)
 - Empty results say where the plugin looked, with a "Search whole file" action
-- Source → target layout from the Vitrine audit plugin: collections in the top bar, a toolbar with confidence toggles, scope and search, a tick for every row shown, and one row per icon with a tick, the source (click to select its instances) and the target
+- Source → target layout from the Vitrine audit plugin: collections in the top bar, a toolbar with confidence toggles, scope and search (shown even when nothing is listed, so the scope can always be changed), a tick for every row shown, and one row per icon with a tick, the source (click to select its instances) and the target
 - Target dropdowns show the match confidence as a badge; their menus list the top five suggestions, each with its badge, then every icon in the target collection, searchable
 - Ticks choose which rows swap; only high-confidence matches start ticked. The Swap button counts the instances it will change
 - A recolored icon keeps its color when swapped between a set drawn with fills and one drawn with strokes, or between sets whose layers are named differently. The color goes on whichever of fills or strokes the new icon draws with — as a color, a bound variable or a color style — including on icons colored from the instance they sit in. Layers in another color, such as a duotone icon's second tone, keep theirs

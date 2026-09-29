@@ -382,10 +382,9 @@
     {statusMessage}
   </div>
 
-  <Layout
-    toolbar={rows.length > 0}
-    status={isLoading && (rows.length > 0 || isSwapping)}
-  >
+  <!-- The toolbar holds the scope, so it stays up when the list is empty:
+       an empty selection is exactly when someone needs to change it. -->
+  <Layout toolbar status={isLoading && (rows.length > 0 || isSwapping)}>
     <!-- Source → target, in the columns the rows below use. -->
     <div class="collections" slot="top">
       <Dropdown
