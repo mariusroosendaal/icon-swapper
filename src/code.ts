@@ -120,34 +120,47 @@ function nestingDepth(node: SceneNode) {
   return node.id.split(";").length - 1;
 }
 
-function normalizeName(name: string, collectionName?: string) {
-  let normalized = name.toLowerCase();
-  if (collectionName) {
-    const prefix = collectionName.toLowerCase();
-    if (normalized.startsWith(`${prefix}/`)) {
-      normalized = normalized.slice(prefix.length + 1);
-    }
-    if (normalized.startsWith(`${prefix} `)) {
-      normalized = normalized.slice(prefix.length + 1);
-    }
-    if (normalized.startsWith(`${prefix}-`)) {
-      normalized = normalized.slice(prefix.length + 1);
+// Words that name a size rather than a glyph, left out like the digits:
+// "icon.24.plus.small" and "icon.16.plus" are the same plus.
+const SIZE_WORDS = new Set([
+  "xxs",
+  "xs",
+  "sm",
+  "small",
+  "md",
+  "lg",
+  "large",
+  "xl",
+  "xxl",
+]);
+
+// A name's words, split on the separators icon sets use — "arrow-left",
+// "arrow_left", "arrows/left", "icon.24.arrow.left" — without sizes.
+function nameTokens(name: string) {
+  return name
+    .toLowerCase()
+    .split(/[\s_/\\.-]+/)
+    .filter(
+      (token) =>
+        token.length > 0 && !/^\d+(px)?$/.test(token) && !SIZE_WORDS.has(token),
+    );
+}
+
+// Words nearly every name in a collection carries — "icon" in "icon.24.plus"
+// — say nothing about the glyph, and would lift the score of every pair.
+function commonTokens(names: string[][]) {
+  const common = new Set<string>();
+  if (names.length < 5) return common;
+  const counts = new Map<string, number>();
+  for (const tokens of names) {
+    for (const token of new Set(tokens)) {
+      counts.set(token, (counts.get(token) ?? 0) + 1);
     }
   }
-
-  normalized = normalized
-    .replace(/[_/\\]+/g, "-")
-    .replace(/--+/g, "-")
-    .replace(/\s+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  // CQ2: the digit filter already covers all size strings (12, 16, 20, …)
-  const tokens = normalized
-    .split("-")
-    .filter((token) => token.length > 0)
-    .filter((token) => !/^\d+$/.test(token));
-
-  return tokens.join("-");
+  for (const [token, count] of counts) {
+    if (count / names.length >= 0.6) common.add(token);
+  }
+  return common;
 }
 
 function expandTokens(tokens: string[]) {
@@ -164,12 +177,17 @@ function expandTokens(tokens: string[]) {
 type NameKey = { normalized: string; tokens: string[]; tokenSet: Set<string> };
 
 // A name made ready to score, once per icon rather than once per pair: a
-// source set scored against a large target set would otherwise normalize each
+// source set scored against a large target set would otherwise split each
 // target name again for every source icon.
-function nameKey(name: string): NameKey {
-  const normalized = normalizeName(name);
-  const tokens = expandTokens(normalized.split("-").filter(Boolean));
-  return { normalized, tokens, tokenSet: new Set(tokens) };
+function nameKey(tokens: string[], common: Set<string>): NameKey {
+  const kept = tokens.filter((token) => !common.has(token));
+  const words = kept.length ? kept : tokens;
+  const expanded = expandTokens(words);
+  return {
+    normalized: words.join("-"),
+    tokens: expanded,
+    tokenSet: new Set(expanded),
+  };
 }
 
 function scoreNames(source: NameKey, target: NameKey) {
@@ -371,13 +389,18 @@ function buildMatches(
     name: component.name,
   }));
 
-  const targetKeys = targetComponents.map((target) => ({
+  const targetTokens = targetComponents.map((t) => nameTokens(t.name));
+  const targetCommon = commonTokens(targetTokens);
+  const targetKeys = targetComponents.map((target, i) => ({
     id: target.id,
-    key: nameKey(target.name),
+    key: nameKey(targetTokens[i], targetCommon),
   }));
+  const sourceCommon = commonTokens(
+    sourceComponents.map((c) => nameTokens(c.name)),
+  );
 
   const matches: MatchRow[] = sourceComponentsUsed.map((source) => {
-    const sourceKey = nameKey(source.name);
+    const sourceKey = nameKey(nameTokens(source.name), sourceCommon);
     // Ties keep collection order, so the first best match stays the suggestion.
     const candidates = targetKeys
       .map((target) => ({

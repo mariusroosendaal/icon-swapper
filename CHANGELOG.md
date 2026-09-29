@@ -31,6 +31,7 @@
 - Opening the plugin shows a loading state until the icons are read, instead of briefly saying none were found
 - An error while reading or swapping icons shows as an error instead of leaving the plugin loading
 - Matching is faster on large icon sets: each icon name is prepared once rather than once per pair
+- Icon sets named with dots, such as `icon.24.plus.small` and `icon.16.plus`, now match: names split on dots, size words like small and large are ignored like the digits, and words nearly every icon in a set shares, such as `icon`, no longer count
 - The scope and "Only in components" can't be changed while a swap runs, so a second swap can't start alongside it
 
 ## [0.5.1] - 2026-05-08

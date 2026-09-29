@@ -23,9 +23,10 @@ Replaces icon instances across your design by matching icons between collections
 
 ## Matching features
 
-- Token-based name matching (`arrow-left-circle` → `["arrow", "left", "circle"]`)
+- Token-based name matching that splits on dashes, underscores, slashes, spaces and dots (`icon.24.arrow-left` → `["arrow", "left"]`)
 - Synonym recognition (`view` ↔ `eye`, `close` ↔ `x`, `check` ↔ `checkmark`)
-- Size-agnostic matching (ignores 12, 16, 20, 24, etc.)
+- Size-agnostic matching (ignores 12, 16, 20, 24 and size words such as small or large)
+- Words every icon in a set shares, such as `icon`, are left out of the comparison
 - Confidence levels: high (80%+), medium (50-79%), low (<50%), shown as a badge on each target and on the suggestions in its menu
 
 ## Options
