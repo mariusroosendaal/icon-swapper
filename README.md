@@ -16,20 +16,22 @@ Replaces icon instances across your design by matching icons between collections
 
 1. Organize icon collections in frames on a page containing the word `icons`
 2. Run the plugin
-3. Select source collection (icons to replace) and target collection (new icons)
-4. Review auto-matched icons and adjust as needed
-5. Click swap
+3. Choose the source collection (icons to replace) and the target collection (new icons) in the bar at the top
+4. Choose where to swap: whole file, this page, or the selection
+5. Review each source → target row; pick another target from the dropdown or untick rows to skip
+6. Click Swap icons
 
 ## Matching features
 
 - Token-based name matching (`arrow-left-circle` → `["arrow", "left", "circle"]`)
 - Synonym recognition (`view` ↔ `eye`, `close` ↔ `x`, `check` ↔ `checkmark`)
 - Size-agnostic matching (ignores 12, 16, 20, 24, etc.)
-- Confidence levels: high (80%+), medium (50-79%), low (<50%)
+- Confidence levels: high (80%+), medium (50-79%), low (<50%), shown as a badge on each target and on the suggestions in its menu
 
 ## Options
 
-- **Only swap in components** - Limit changes to icon instances within components
+- **Scope** - Swap in the whole file, on the current page, or inside the selected layers. The plugin remembers your last choice
+- **Only in components** - Limit changes to icon instances within components
 
 ## Development
 

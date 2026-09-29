@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Scope picker next to the matches list: whole file, this page, or selection. The last choice is remembered
+- Whole-file scope finds icons on every page without loading them, then loads one page at a time to swap, with progress shown for long runs
+- Each match shows how many times the icon is used, and on how many pages
+- Matches refresh when the selection changes (selection scope) or the current page changes (page scope)
+- Empty results say where the plugin looked, with a "Search whole file" action
+- Source → target layout from the Vitrine audit plugin: collections in the top bar, a toolbar with confidence toggles, scope and search, a tick for every row shown, and one row per icon with a tick, the source (click to select its instances) and the target
+- Target dropdowns show the match confidence as a badge; their menus list the top five suggestions, each with its badge, then every icon in the target collection, searchable
+- Ticks choose which rows swap; only high-confidence matches start ticked. The Swap button counts the instances it will change
+- A recolored icon keeps its color when swapped between a set drawn with fills and one drawn with strokes, or between sets whose layers are named differently. The color goes on whichever of fills or strokes the new icon draws with — as a color, a bound variable or a color style — including on icons colored from the instance they sit in. Layers in another color, such as a duotone icon's second tone, keep theirs
+- Collection dropdowns show each collection's icon count as an outlined badge
+- The default collections prefer frames named like an icon set ("icons", "Icons (feather)") over the next frame on the page, so a logo or social set is no longer picked as the target
+
+### Changed
+
+- The window is 400×560 so a source → target row fits
+- Picking a target ticks its row, replacing the "None" option; untick a row to skip it
+- Errors show in a banner instead of only as a notification
+- Instances inside the icon collection frames are never swapped
+- Icons inside main components are swapped before their nested copies, so instances follow the main component instead of getting an override
+- The match list refreshes after a swap
+- The success notification names the number of pages and reports icons that couldn't be swapped
+
 ## [0.5.1] - 2026-05-08
 
 ### Added
