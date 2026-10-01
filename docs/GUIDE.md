@@ -4,7 +4,7 @@ Icon Swapper replaces the icons of one collection with the matching icons of ano
 
 ## Swap icons
 
-![](icon-swapper-matches.png)
+![](icon-swapper-matches.svg)
 
 The plugin reads the icon collections from a page whose name contains `icons`. Each frame on that page is one collection, and the icon components inside it are its icons. Both collections must be in the file.
 
