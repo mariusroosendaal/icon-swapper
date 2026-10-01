@@ -21,7 +21,7 @@ Replaces icon instances across your design by matching icons between collections
 5. Review each source → target row; pick another target from the dropdown or untick rows to skip
 6. Click Swap icons
 
-For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Icon-Swapper-3ecf29c09c9d818f947efffb3ee6961d). <!-- dev -->
+For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Icon-Swapper-3ecf29c09c9d818f947efffb3ee6961d).
 
 ## Matching features
 
