@@ -8,8 +8,6 @@ A Figma plugin for swapping icon components from one collection to another with 
 
 Get it from the [Figma Community](https://www.figma.com/community/plugin/1597965780056553650/icon-swapper)
 
-The [user guide](https://figma-plugins.notion.site/Icon-Swapper-3ecf29c09c9d818f947efffb3ee6961d) shows each screen and what its controls do.
-
 ## What it does
 
 Replaces icon instances across your design by matching icons between collections using intelligent name comparison, synonym support, and confidence scoring.
@@ -22,6 +20,8 @@ Replaces icon instances across your design by matching icons between collections
 4. Choose where to swap: whole file, this page, or the selection
 5. Review each source → target row; pick another target from the dropdown or untick rows to skip
 6. Click Swap icons
+
+For each screen and what its controls do, see the [user guide](https://figma-plugins.notion.site/Icon-Swapper-3ecf29c09c9d818f947efffb3ee6961d). <!-- dev -->
 
 ## Matching features
 
