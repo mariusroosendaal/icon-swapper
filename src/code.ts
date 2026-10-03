@@ -1,3 +1,5 @@
+import { createSettingsStore } from "figma-plugin-utilities/lib/figma-helpers";
+
 figma.showUI(__html__, {
   width: 400,
   height: 560,
@@ -71,6 +73,8 @@ const SCOPE_PHRASE: Record<Scope, string> = {
 function parseScope(value: unknown): Scope {
   return SCOPES.includes(value as Scope) ? (value as Scope) : "page";
 }
+
+const scopeStore = createSettingsStore(SCOPE_STORAGE_KEY, parseScope);
 
 type IconUse = {
   instance: InstanceNode;
@@ -745,9 +749,7 @@ async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
       postError(`No icon collections found on page: ${ICONS_PAGE_NAME}`);
       return;
     }
-    const scope = parseScope(
-      await figma.clientStorage.getAsync(SCOPE_STORAGE_KEY),
-    );
+    const scope = await scopeStore.load();
     // Guess the source from what is used nearby. For the whole file that
     // would mean a lookup per icon in every collection, so the page stands in.
     const usage = await scanUsage(scan, {
@@ -780,9 +782,8 @@ async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
       postError("Choose both source and target collections.");
       return;
     }
-    const scope = parseScope(msg.scope);
     latestMatchRequest = Number(requestId) || 0;
-    await figma.clientStorage.setAsync(SCOPE_STORAGE_KEY, scope);
+    const scope = await scopeStore.save(msg.scope);
     const scan = await scanCollections();
     const usage = await scanUsage(scan, {
       scope,
