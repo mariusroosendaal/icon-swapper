@@ -33,8 +33,8 @@ For each screen and what its controls do, see the [user guide](https://figma-plu
 
 ## Options
 
-- **Scope** - Swap in the whole file, on the current page, or inside the selected layers. The plugin remembers your last choice
-- **Only in components** - Limit changes to icon instances within components
+- **Scope** — Swap in the whole file, on the current page, or inside the selected layers. The plugin remembers your last choice
+- **Only in components** — Limit changes to icon instances within components
 
 ## Development
 
