@@ -77,7 +77,8 @@ function inlineFigmaHtml(): Plugin {
           "i"
         );
         if (hrefPattern.test(html)) {
-          html = html.replace(hrefPattern, `<style>${css}</style>`);
+          // Use function replacement to avoid $ pattern interpretation in CSS
+          html = html.replace(hrefPattern, () => `<style>${css}</style>`);
           delete bundle[fileName]; // Remove CSS file from bundle
         }
       }
@@ -94,9 +95,10 @@ function inlineFigmaHtml(): Plugin {
           "i"
         );
         if (scriptPattern.test(html)) {
+          // Use function replacement to avoid $ pattern interpretation in minified JS
           html = html.replace(
             scriptPattern,
-            `<script type="module">${chunk.code}</script>`
+            () => `<script type="module">${chunk.code}</script>`
           );
           // Remove any modulepreload links for this chunk
           html = html.replace(
