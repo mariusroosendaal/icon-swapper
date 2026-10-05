@@ -4,7 +4,7 @@ import {
   showNotice,
   showSuccess,
 } from "figma-plugin-utilities/lib/figma-helpers";
-import { plural, UNDO } from "figma-plugin-utilities/lib/format";
+import { joinList, plural, UNDO } from "figma-plugin-utilities/lib/format";
 
 figma.showUI(__html__, {
   width: 400,
@@ -625,6 +625,8 @@ async function swapIcons(
   const swappedPages = new Set<string>();
   let swapped = 0;
   let failed = 0;
+  // The source icons whose instances couldn't be swapped, by name.
+  const failedIcons = new Set<string>();
 
   for (let i = 0; i < uses.length; i++) {
     const { instance, component, pageId } = uses[i];
@@ -641,6 +643,7 @@ async function swapIcons(
         instance.swapComponent(target);
       } catch {
         failed += 1;
+        failedIcons.add(component.name);
         continue;
       }
       swapped += 1;
@@ -660,7 +663,12 @@ async function swapIcons(
     }
   }
 
-  return { swapped, failed, pages: swappedPages.size };
+  return {
+    swapped,
+    failed,
+    failedIcons: [...failedIcons],
+    pages: swappedPages.size,
+  };
 }
 
 // Errors show in the plugin's window, which is open while it reads or swaps.
@@ -846,8 +854,15 @@ async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
       onlyInsideComponents: Boolean(onlyInsideComponents),
     });
 
+    const named =
+      result.failedIcons.length > 3
+        ? [
+            ...result.failedIcons.slice(0, 3),
+            `${result.failedIcons.length - 3} more`,
+          ]
+        : result.failedIcons;
     const failedNote = result.failed
-      ? ` ${plural(result.failed, "icon")} couldn't be swapped.`
+      ? ` ${plural(result.failed, "icon")} couldn't be swapped: ${joinList(named)}.`
       : "";
     if (result.swapped === 0 && result.failed === 0) {
       showNotice(

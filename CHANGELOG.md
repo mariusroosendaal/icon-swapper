@@ -4,7 +4,7 @@
 
 ### Changed
 
-- A swap with no source icons in the scope shows a regular notification that says to check the scope, instead of an error. A swap where some icons couldn't be swapped shows in red, with the count
+- A swap with no source icons in the scope shows a regular notification that says to check the scope, instead of an error. A swap where some icons couldn't be swapped shows in red, with the count and the icons' names
 - Errors show once, in the plugin's window, where they also showed as a notification
 - Clicking a source whose icons are gone updates the list, where it asked you to refresh it
 
