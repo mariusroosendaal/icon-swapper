@@ -361,6 +361,8 @@
           scheduleMatches();
         }
       },
+      // Icons in the list that the file no longer has.
+      stale: () => requestMatches(),
       "swap-complete": () => {
         error = "";
         isLoading = false;

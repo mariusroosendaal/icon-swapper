@@ -1,4 +1,10 @@
-import { createSettingsStore } from "figma-plugin-utilities/lib/figma-helpers";
+import {
+  createSettingsStore,
+  showError,
+  showNotice,
+  showSuccess,
+} from "figma-plugin-utilities/lib/figma-helpers";
+import { plural, UNDO } from "figma-plugin-utilities/lib/format";
 
 figma.showUI(__html__, {
   width: 400,
@@ -657,9 +663,9 @@ async function swapIcons(
   return { swapped, failed, pages: swappedPages.size };
 }
 
+// Errors show in the plugin's window, which is open while it reads or swaps.
 function postError(message: string) {
   figma.ui.postMessage({ type: "error", message });
-  figma.notify(message, { error: true });
 }
 
 function postProgress(message: string, requestId?: number) {
@@ -700,7 +706,10 @@ async function reveal(
   const usage = await scanUsage(scan, { ...options, components: [component] });
   const uses = usage.uses.filter((use) => use.component.id === componentId);
   if (uses.length === 0) {
-    figma.notify("Those icons aren't there any more. Refresh the list.");
+    showNotice(
+      "Those icons aren't there any more. The list now shows what's left.",
+    );
+    figma.ui.postMessage({ type: "stale" });
     return;
   }
   const pageId = uses.some((use) => use.pageId === figma.currentPage.id)
@@ -746,7 +755,9 @@ async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
   if (msg.type === "ui-ready") {
     const scan = await scanCollections();
     if (scan.collections.length === 0) {
-      postError(`No icon collections found on page: ${ICONS_PAGE_NAME}`);
+      postError(
+        `No icon collections on the "${ICONS_PAGE_NAME}" page. Add them there, then reopen the plugin.`,
+      );
       return;
     }
     const scope = await scopeStore.load();
@@ -836,19 +847,19 @@ async function handleMessage(msg: Parameters<MessageEventHandler>[0]) {
     });
 
     const failedNote = result.failed
-      ? ` ${result.failed} couldn't be swapped.`
+      ? ` ${plural(result.failed, "icon")} couldn't be swapped.`
       : "";
-    if (result.swapped === 0) {
-      figma.notify(
-        `No icons swapped — check that source icons appear ${SCOPE_PHRASE[scope]}.${failedNote}`,
-        { error: true },
+    if (result.swapped === 0 && result.failed === 0) {
+      showNotice(
+        `Nothing to swap: no source icons ${SCOPE_PHRASE[scope]}. Check the scope.`,
       );
+    } else if (result.swapped === 0) {
+      showError(`No icons swapped.${failedNote}`);
     } else {
-      const icons = `${result.swapped} icon${result.swapped === 1 ? "" : "s"}`;
       const pages = result.pages > 1 ? ` on ${result.pages} pages` : "";
-      figma.notify(
-        `Swapped ${icons}${pages}.${failedNote} Press Ctrl/Cmd+Z to undo.`,
-      );
+      const message = `Swapped ${plural(result.swapped, "icon")}${pages}.${failedNote} ${UNDO}`;
+      if (result.failed > 0) showError(message);
+      else showSuccess(message);
     }
     figma.ui.postMessage({
       type: "swap-complete",

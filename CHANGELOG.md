@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- A swap with no source icons in the scope shows a regular notification that says to check the scope, instead of an error. A swap where some icons couldn't be swapped shows in red, with the count
+- Errors show once, in the plugin's window, where they also showed as a notification
+- Clicking a source whose icons are gone updates the list, where it asked you to refresh it
+
 ## [0.6.0] - 2026-09-29
 
 ### Added
