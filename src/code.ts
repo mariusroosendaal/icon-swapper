@@ -2,7 +2,7 @@ import { createSettingsStore } from "figma-plugin-utilities/lib/figma-helpers";
 
 figma.showUI(__html__, {
   width: 400,
-  height: 560,
+  height: 460,
   themeColors: true,
 });
 
