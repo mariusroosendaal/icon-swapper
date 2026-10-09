@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- The progress line while swapping reads "Swapping icons...", matching the action
+
 ### Changed
 
 - A swap with no source icons in the scope shows a regular notification that says to check the scope, instead of an error. A swap where some icons couldn't be swapped shows in red, with the count and the icons' names

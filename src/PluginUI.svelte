@@ -239,7 +239,7 @@
     isLoading = true;
     isSwapping = true;
     progressMessage = "";
-    statusMessage = "Swapping icons, please wait.";
+    statusMessage = "Swapping icons...";
     sendToPlugin("swap-icons", {
       sourceCollectionId: selectedSource.value,
       mapping,
